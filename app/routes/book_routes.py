@@ -14,3 +14,23 @@ def get_all_books():
             "description": book.description
         })
     return books_response
+
+# No new import statements...
+# No modifications to the other route...
+
+# Surround url parameter with arrow brackets to designate it as a passed variable
+
+
+@books_bp.get("/<book_id>")
+# Enter the url parameter in the function arguments
+def get_one_book(book_id):
+
+    # Parameters are read as strings, so convert to int
+    book_id = int(book_id)
+    for book in books:
+        if book.id == book_id:
+            return {
+                "id": book.id,
+                "title": book.title,
+                "description": book.description,
+            }
