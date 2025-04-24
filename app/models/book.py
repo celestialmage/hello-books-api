@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from ..db import db
 
+
 class Book(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str]
@@ -10,7 +11,7 @@ class Book(db.Model):
 
 # class Book:
 #     def __init__(self, id, title, description):
-#         self.id = id 
+#         self.id = id
 #         self.title = title
 #         self.description = description
 
