@@ -4,6 +4,7 @@ from ..db import db
 
 books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
+
 @books_bp.post("")
 def create_book():
     request_body = request.get_json()
@@ -23,12 +24,20 @@ def create_book():
 
 # vvvvvvvvvvvvvv old code vvvvvvvvvvvvvv
 
+
 @books_bp.get("")
 def get_all_books():
-    query = db.select(Book).order_by(Book.id)
-    books = db.session.scalars(query)
-    # We could also write the line above as:
-    # books = db.session.execute(query).scalars()
+    query = db.select(Book)
+
+    title_param = request.args.get("title")
+    if title_param:
+        query = query.where(Book.title.ilike(f"%{title_param}"))
+
+    description_param = request.args.get("description")
+    if description_param:
+        query = query.where(Book.description.ilike(f"%{description_param}%"))
+
+    books = db.session.scalars(query.order_by(Book.id))
 
     books_response = []
     for book in books:
@@ -40,6 +49,22 @@ def get_all_books():
             }
         )
     return books_response
+
+# No new import statements...
+
+# No modifications to the other routes...
+
+
+@books_bp.get("/<book_id>")
+def get_one_book(book_id):
+    query = db.select(Book).where(Book.id == book_id)
+    book = db.session.scalar(query)
+
+    return {
+        "id": book.id,
+        "title": book.title,
+        "description": book.description
+    }
 
 # # No new import statements...
 # # No modifications to the other route...
