@@ -8,21 +8,13 @@ books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 @books_bp.post("")
 def create_book():
     request_body = request.get_json()
-    title = request_body["title"]
-    description = request_body["description"]
 
-    new_book = Book(title=title, description=description)
+    new_book = validate_create_book(request_body)
     db.session.add(new_book)
     db.session.commit()
 
-    response = {
-        "id": new_book.id,
-        "title": new_book.title,
-        "description": new_book.description,
-    }
+    response = new_book.to_dict()
     return response, 201
-
-# vvvvvvvvvvvvvv old code vvvvvvvvvvvvvv
 
 
 @books_bp.get("")
@@ -41,68 +33,42 @@ def get_all_books():
 
     books_response = []
     for book in books:
-        books_response.append(
-            {
-                "id": book.id,
-                "title": book.title,
-                "description": book.description
-            }
-        )
+        books_response.append(book.to_dict())
     return books_response
-
-# No new import statements...
-
-# No modifications to the other routes...
 
 
 @books_bp.get("/<book_id>")
 def get_one_book(book_id):
+    book = validate_book(book_id)
+
+    return book.to_dict()
+
+
+def validate_book(book_id):
+    try:
+        book_id = int(book_id)
+    except:
+        response = {"message": f"Book {book_id} invalid"}
+        abort(make_response(response, 400))
+
     query = db.select(Book).where(Book.id == book_id)
     book = db.session.scalar(query)
 
-    return {
-        "id": book.id,
-        "title": book.title,
-        "description": book.description
-    }
+    if not book:
+        response = {"message": f"Book {book_id} not found"}
+        abort(make_response(response, 404))
 
-# # No new import statements...
-# # No modifications to the other route...
-
-# # Surround url parameter with arrow brackets to designate it as a passed variable
+    return book
 
 
-# @books_bp.get("/<book_id>")
-# # Enter the url parameter in the function arguments
-# def get_one_book(book_id):
+def validate_create_book(request):
 
-#     found_book = validate_book(book_id)
+    try:
+        new_book = Book.from_dict(request)
+    except KeyError as error:
+        message = {
+            "message": f"New book missing '{error.args[0]}' attribute."
+        }
+        abort(make_response(message, 400))
 
-#     book = {
-#         "id": found_book.id,
-#         "title": found_book.title,
-#         "description": found_book.description
-#     }
-
-#     return book
-
-# # vvvvvvvvvvvvvvvvv HELPER FUNCTIONS vvvvvvvvvvvvvvvvv
-
-
-# def validate_book(book_id):
-
-#     # Parameters are read as strings, so try to convert to int
-#     try:
-#         book_id = int(book_id)
-#     except:
-#         # If the string can't be converted, returns a status 400 message
-#         response = {"message": f"book {book_id} invalid"}
-#         abort(make_response(response, 400))
-
-#     for book in books:
-#         if book.id == book_id:
-#             return book
-
-#     # If no matching book is found, return 404 error
-#     response = {"message": f"book {book_id} not found"}
-#     abort(make_response(response, 404))
+    return new_book
