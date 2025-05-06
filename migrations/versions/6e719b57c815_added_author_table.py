@@ -1,8 +1,8 @@
-"""adds Book model
+"""added author table
 
-Revision ID: a25fda652446
+Revision ID: 6e719b57c815
 Revises: 
-Create Date: 2025-04-24 09:06:35.001651
+Create Date: 2025-05-05 18:22:30.940197
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a25fda652446'
+revision = '6e719b57c815'
 down_revision = None
 branch_labels = None
 depends_on = None
